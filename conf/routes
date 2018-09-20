@@ -290,8 +290,8 @@ GET   /robots.txt               controllers.Assets.at(path = "/public", file = "
 
 # These endpoints are linked from embedded comments HTML:  [2WPGKS04]
 # Ensure they aren't cached for too long. [2WBKP46]
-# Also, use a descriptie name, because people see these names when they copy-paste embedded
-# comments html tags.
+# Also, use a descriptive name that includes "Talkyard", because people see these names when
+# they copy-paste embedded comments html tags.
 GET   /-/talkyard-comments.js     controllers.Assets.at(path = "/public/res", file = "ed-comments.js")
 GET   /-/talkyard-comments.min.js controllers.Assets.at(path = "/public/res", file = "ed-comments.min.js")
 # Old names: [2EBG05]

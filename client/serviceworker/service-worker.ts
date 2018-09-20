@@ -4,12 +4,16 @@
 // https://developers.google.com/web/ilt/pwa/caching-files-with-service-worker
 // https://github.com/mdn/sw-test/blob/gh-pages/sw.js
 
+// detect updates to previous service worker registrations, & tell users to refresh the page.
 
-console.log("Service worker v0.0.3 loading [TyMSWVLDNG]");
+
+console.log("Service worker v0.0.4 loading [TyMSWVLDNG]");
 
 declare var oninstall: any;
+declare var onactivate: any;
 declare var onfetch: any;
 declare var skipWaiting: any;
+declare var clients;
 
 let longPollingReqNr = 0;
 let longPollingPromise = null;
@@ -17,11 +21,31 @@ let longPollingPromise = null;
 let totalReqNr = 0;
 let numActive = 0;
 
+
 oninstall = function(event) {
   console.log("Service worker installed [TyMSWINSTLD]");
   skipWaiting();
 };
 
+
+onactivate = function(event){
+  console.log('Service worker activated [TyMSWACTIVD]');
+};
+
+
+onmessage = function(event) {
+  console.log(`Service worker got message: '${JSON.stringify(event.data)}' [TyMSWGOTMSG]`);
+  clients.matchAll({ type: 'window' }).then(function (cs) {
+    cs.forEach(function(c) {
+      c.postMessage("Hello from service worker [TyMSWSENDMSG]");
+    });
+  });
+};
+
+
+
+
+/*
 onfetch = function(event: any) {
   totalReqNr += 1;
   const reqNr = totalReqNr;
@@ -55,4 +79,4 @@ onfetch = function(event: any) {
       console.log(`sw rsp ${reqNr}, ${numActive} active: ${url} [TyMSWRSP]`);
     });
   }
-};
+}; */

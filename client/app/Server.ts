@@ -1492,6 +1492,15 @@ export function testGetLongPollingNr() {
 }
 
 
+if (navigator.serviceWorker) {
+  // See:  http://craig-russell.co.uk/2016/01/29/service-worker-messaging.html#.W6OqjN0zaV4
+  navigator.serviceWorker.addEventListener('message', function (event) {
+    console.log(
+        `Got message: ${JSON.stringify(event)}, data: ${JSON.stringify(event.data)} [TyMGOTSWMSG]`);
+  });
+}
+
+
 /**
  * Built for talking with Nginx and nchan, see: https://github.com/slact/nchan#long-polling
  *
@@ -1517,7 +1526,18 @@ export function sendLongPollingRequest(userId: UserId, successFn: (response) => 
   const reqNr = longPollingState.nextReqNr;
   longPollingState.nextReqNr = reqNr + 1;
 
-  console.debug(`Sending long polling request ${reqNr}, channel ${channelId} [TyMLPRSEND]`);
+  const toServiceWorker = navigator.serviceWorker ? ", to service worker" : '';
+  console.debug(
+      `Sending long polling request ${reqNr}, channel ${channelId}${toServiceWorker} [TyMLPRSEND]`);
+
+  if (navigator.serviceWorker) {
+    debiki.serviceWorkerPromise.then(function() {
+      navigator.serviceWorker.controller.postMessage({ longPoll: channelId });
+    });
+    return;
+  }
+  // Else, back to the stone age with Safari and Apple.
+
 
   const options: GetOptions = {
     dataType: 'json',

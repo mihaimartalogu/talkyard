@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017 Kaj Magnus Lindberg
+ * Copyright (c) 2010-2018 Kaj Magnus Lindberg
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -21,11 +21,24 @@
 const d = { i: debiki.internal };
 
 const scriptLoadDoneCallbacks = [];
-debiki.scriptLoad = {  // RENAME to ed.whenStarted(...) ?
+debiki.scriptLoad = {  // RENAME to tyi.whenStarted(...) ?   ("Talkyard internal")
   done: function(callback) {
     scriptLoadDoneCallbacks.push(callback);
   }
 };
+
+
+let resolveServiceWorkerPromise;
+let rejectServiceWorkerPromise;
+
+debiki.serviceWorkerPromise = new Promise(function (resolve, reject) {
+  resolveServiceWorkerPromise = resolve;
+  rejectServiceWorkerPromise = reject;
+});
+
+if (!('serviceWorker' in navigator)) {
+  rejectServiceWorkerPromise();
+}
 
 const allPostsNotTitleSelector = '.debiki .dw-p:not(.dw-p-ttl)';
 
@@ -251,7 +264,31 @@ function renderPageInBrowser() {
     debiki2.page.Hacks.processPosts();
     _.each(scriptLoadDoneCallbacks, function(c) { c(); });
     debiki2.page.PostsReadTracker.start();
+
+    // Wait with the service worker, in case is an underpowered mobile phone
+    // that's 100% busy downloading things and rendering the page — then don't want the service
+    // worker to start; maybe in the future, it'll download and cache things it, too.
+    setTimeout(registerServiceWorker, 3500);
   });
+
+  function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
+      console.log("No service worker. [TyMSWABSENT]");
+      return;
+    }
+    var dotMin = '.min';
+    // @ifdef DEBUG
+    dotMin = '';
+    // @endif
+    navigator.serviceWorker.register(`/ty-service-worker${dotMin}.js`)
+        .then(function(reg) {
+          console.log("Registered service worker. [TyMSWREGOK]");
+          setTimeout(resolveServiceWorkerPromise);
+        }).catch(function(error) {
+          console.log(`Error registering service worker: ${error} [TyESWREGOK]`);
+          setTimeout(rejectServiceWorkerPromise);
+        });
+  }
 
   function runNextStep() {
     debiki2.dieIf(!steps.length, "steps is empty [DwE5KPEW2]");

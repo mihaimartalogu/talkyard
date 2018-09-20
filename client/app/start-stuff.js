@@ -62,17 +62,4 @@ debiki2.dieIf(location.port && eds.debugOrigin.indexOf(':' + location.port) === 
   "But you're accessing the server via " + location.host + ". [EsE7YGK2]");
 
 
-if ('serviceWorker' in navigator) {
-  var dotMin = '.min';
-  // @ifdef DEBUG
-  dotMin = '';
-  // @endif
-  navigator.serviceWorker.register('/ty-service-worker' + dotMin + '.js')
-    .then(function(reg) {
-      console.log("Registered service worker. [TyMSWREGOK]");
-    }).catch(function(error) {
-    console.log("Errorr registering service worker: " + error + " [TyESWREG]");
-  });
-}
-
 // vim: fdm=marker et ts=2 sw=2 fo=tcqwn list
