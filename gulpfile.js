@@ -262,7 +262,7 @@ function compileServerTypescript() {
 var swTypescriptProject = typeScript.createProject({
   target: 'ES5',
   outFile: 'ty-sw-typescript.js',
-  lib: ['es5', 'es2015', 'dom'],  // 'dom' for: Console, XMLHttpRequest, self
+  lib: ['es5', 'es2015', 'webworker'],
   types: ['core-js'],
   sourceMap: true,     // ??
   inlineSources: true  // include source code in mapping file

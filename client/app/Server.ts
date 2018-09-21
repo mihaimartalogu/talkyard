@@ -1492,15 +1492,6 @@ export function testGetLongPollingNr() {
 }
 
 
-if (navigator.serviceWorker) {
-  // See:  http://craig-russell.co.uk/2016/01/29/service-worker-messaging.html#.W6OqjN0zaV4
-  navigator.serviceWorker.addEventListener('message', function (event) {
-    console.log(
-        `Got message: ${JSON.stringify(event)}, data: ${JSON.stringify(event.data)} [TyMGOTSWMSG]`);
-  });
-}
-
-
 /**
  * Built for talking with Nginx and nchan, see: https://github.com/slact/nchan#long-polling
  *
@@ -1510,7 +1501,7 @@ if (navigator.serviceWorker) {
  * COULD How avoid "nchan client prematurely closed connection" info message in the Nginx logs?
  * I asked: https://github.com/slact/nchan/issues/466
  */
-export function sendLongPollingRequest(userId: UserId, successFn: (response) => void,
+export function sendLongPollingRequest(userId: UserId, successFn: (response) => void,  // dupl [7KVAWBY0]
       errorFn: ErrorStatusHandler, resendIfNeeded: () => void) {
 
   if (longPollingState.ongoingRequest) {
