@@ -16,6 +16,7 @@
  */
 
 /// <reference path="../slim-bundle.d.ts" />
+//xx <reference path="../../../node_modules/moment/moment.d.ts" />  <— too new version?
 declare var moment: any;
 
 //------------------------------------------------------------------------------

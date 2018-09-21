@@ -332,7 +332,7 @@ interface NewCategoryStuff {
 
 
 interface IdAddress {
-  id: string;     // site id
+  id: SiteId;
   origin: string; // e.g. kittens-forum.example.com
   siteIdOrigin: string; // e.g. site-123.example.com
 }
