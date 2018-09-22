@@ -31,7 +31,7 @@ debiki.scriptLoad = {  // RENAME to tyi.whenStarted(...) ?   ("Talkyard internal
 let resolveServiceWorkerPromise;
 let rejectServiceWorkerPromise;
 
-debiki.serviceWorkerPromise = new Promise(function (resolve, reject) {
+debiki.serviceWorkerPromise = new Promise<ServiceWorker>(function (resolve, reject) {
   resolveServiceWorkerPromise = resolve;
   rejectServiceWorkerPromise = reject;
 });
@@ -267,7 +267,9 @@ function renderPageInBrowser() {
 
     // Wait with the service worker, in case is an underpowered mobile phone
     // that's 100% busy downloading things and rendering the page — then don't want the service
-    // worker to start; maybe in the future, it'll download and cache things it, too.
+    // worker to start before it's probably done. Maybe in the future, it'll download
+    // and cache things it, too.
+    // Could maybeschedule this timeout, after a done-rendering & downloading event?
     setTimeout(registerServiceWorker, 3500);
   });
 
@@ -281,9 +283,19 @@ function renderPageInBrowser() {
     dotMin = '';
     // @endif
     navigator.serviceWorker.register(`/ty-service-worker${dotMin}.js`)
-        .then(function(reg) {
+        .then(function(registration) {
           console.log("Registered service worker. [TyMSWREGOK]");
-          setTimeout(resolveServiceWorkerPromise);
+          //registration.onupdatefound = tell the user to refresh the page
+          const intervalHandle = setInterval(function() {
+            // registration.active defined, doesn't mean we have a service worker.
+            //if (navigator.serviceWorker.controller) {
+            if (registration.active) {
+              // Now we can start using it. [6KAR3DJ9]
+              // However, navigator.serviceWorker.controller might still be absent (weird).
+              clearInterval(intervalHandle);
+              resolveServiceWorkerPromise(registration.active);
+            }
+          }, 250)
         }).catch(function(error) {
           console.log(`Error registering service worker: ${error} [TyESWREGOK]`);
           setTimeout(rejectServiceWorkerPromise);

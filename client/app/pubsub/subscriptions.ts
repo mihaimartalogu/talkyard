@@ -29,8 +29,7 @@ const RetryAfterMsDefault = 5000;
 const GiveUpAfterTotalMs = 7 * 60 * 1000; // 7 minutes [5AR20ZJ]
 let retryAfterMs = RetryAfterMsDefault;
 let startedFailingAtMs;
-const useSw = ('serviceWorker' in navigator) &&
-    navigator.serviceWorker.controller;  // ? this needed ?
+const useSw = 'serviceWorker' in navigator;
 
 if (useSw) {
   navigator.serviceWorker.addEventListener('message', function (event) {
@@ -84,12 +83,17 @@ if (useSw) {
 export function subscribeToServerEvents(me: Myself) {
   if (useSw) {
     debiki.serviceWorkerPromise.then(function() {
+    });
+    debiki.serviceWorkerPromise.then(function(sw: ServiceWorker) {
+      // DO_AFTER 2019-01-01 add if-DEBUG around, or delete dieIf()
+      //dieIf(!navigator.serviceWorker.controller, "Service worker didn't claim this tab [TyE7KBQT2]");
       const message: SubscribeToEventsSwMessage = {
         doWhat: SwDo.SubscribeToEvents,
         siteId: eds.siteId,
         myId: me.id,
       };
-      navigator.serviceWorker.controller.postMessage(message);
+      //navigator.serviceWorker.controller.postMessage(message);  // [6KAR3DJ9]
+      sw.postMessage(message);  // [6KAR3DJ9]
     });
   }
   else {
@@ -117,7 +121,7 @@ function subscribeToServerEventsDirectly(me: Myself) {
 
   Server.sendLongPollingRequest(me.id, (response) => {
     console.debug("Long polling request done, sending another...");
-    subscribeToServerEvents(me);
+    subscribeToServerEventsDirectly(me);
 
     // Reset backoff, since all seems fine.
     retryAfterMs = RetryAfterMsDefault;
@@ -181,7 +185,7 @@ function subscribeToServerEventsDirectly(me: Myself) {
       console.warn(`Long polling error, will retry in ${Math.floor(retryAfterMs / 1000)} seconds...`);
       setTimeout(() => {
         if (!Server.isLongPollingNow()) {
-          subscribeToServerEvents(me);
+          subscribeToServerEventsDirectly(me);
         }
       }, retryAfterMs);
     }
@@ -190,7 +194,7 @@ function subscribeToServerEventsDirectly(me: Myself) {
     // No error has happened — we aborted the request intentionally. All fine then? Reset the backoff:
     retryAfterMs = RetryAfterMsDefault;
     if (!Server.isLongPollingNow()) {
-      subscribeToServerEvents(me);
+      subscribeToServerEventsDirectly(me);
     }
   });
 }

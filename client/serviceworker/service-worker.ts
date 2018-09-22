@@ -39,7 +39,10 @@ onactivate = function(event) {
   // service worker (until after reload), since it was loaded outside any service worker
   // — unless we claim() it — then, subsequent fetches will be via this service worker,
   // and we can send messages to that tab.
-  event.waitUntil(clients.claim());
+  if (!clients.claim) return;
+  event.waitUntil(clients.claim().then(() => {
+    sendToAllBrowserTabs("HELOZZ"); // remove
+  }));
 };
 
 
@@ -139,13 +142,9 @@ function subscribeToServerEvents(channelId: string) {
 }
 
 
-interface OngoingRequest {
-  abort();
-}
-
-
-interface OngoingRequestWithNr extends OngoingRequest {
+interface OngoingRequestWithNr extends Promise<any> {
   reqNr?: number;
+  anyAbortController?: AbortController;
 }
 
 interface LongPollingState {
@@ -231,8 +230,7 @@ function sendLongPollingRequest(channelId: string, successFn: (response) => void
   // chrome://net-internals/#events and in the Nginx logs are for which request in the browser.
   const pollUrl = `/-/pubsub/subscribe/${channelId}?reqNr=${reqNr}`;
 
-  //longPollingState.ongoingRequest  =
-  fetch(pollUrl, options).then(function(response) {
+  longPollingState.ongoingRequest = fetch(pollUrl, options).then(function(response) {
     const json = response.json();
     console.debug(`Long polling request ${reqNr} response [TyMSWLPRRESP]: ${JSON.stringify(json)}`);
     longPollingState.ongoingRequest = null;
@@ -260,6 +258,7 @@ function sendLongPollingRequest(channelId: string, successFn: (response) => void
     errorFn(0);
   });
 
+  longPollingState.ongoingRequest.anyAbortController = anyAbortController;
   longPollingState.ongoingRequest.reqNr = reqNr;
 
   // Cancel and send a new request after half a minute.
@@ -280,7 +279,9 @@ function sendLongPollingRequest(channelId: string, successFn: (response) => void
     if (requestDone)
       return;
     console.debug(`Aborting long polling request ${reqNr} after ${LongPollingSeconds}s [TyMLPRABRT1]`);
-    currentRequest.abort();
+    if (currentRequest.anyAbortController) {
+      currentRequest.anyAbortController.abort();
+    }
     // Unless a new request has been started, reset the state.
     if (currentRequest === longPollingState.ongoingRequest) {
       longPollingState.ongoingRequest = null;
@@ -296,12 +297,13 @@ function isLongPollingNow(): boolean {
 
 
 function abortAnyLongPollingRequest() {
-  /*
-  if (longPollingState.ongoingRequest) {
-    const reqNr = longPollingState.ongoingRequest.reqNr;
-    console.debug(`Aborting long polling request ${reqNr} [TyMLPRABRT2]`);
-    longPollingState.ongoingRequest.abort();
+  const ongReq = longPollingState.ongoingRequest;
+  if (ongReq) {
+    console.debug(`Aborting long polling request ${ongReq.reqNr} [TyMLPRABRT2]`);
+    if (ongReq.anyAbortController) {
+      ongReq.anyAbortController.abort();
+    }
     longPollingState.ongoingRequest = null;
-  } */
+  }
 }
 

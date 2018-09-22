@@ -1517,17 +1517,8 @@ export function sendLongPollingRequest(userId: UserId, successFn: (response) => 
   const reqNr = longPollingState.nextReqNr;
   longPollingState.nextReqNr = reqNr + 1;
 
-  const toServiceWorker = navigator.serviceWorker ? ", to service worker" : '';
   console.debug(
-      `Sending long polling request ${reqNr}, channel ${channelId}${toServiceWorker} [TyMLPRSEND]`);
-
-  if (navigator.serviceWorker) {
-    debiki.serviceWorkerPromise.then(function() {
-      navigator.serviceWorker.controller.postMessage({ longPoll: channelId });
-    });
-    return;
-  }
-  // Else, back to the stone age with Safari and Apple.
+      `Sending long polling request ${reqNr}, channel ${channelId} [TyMLPRSEND]`);
 
 
   const options: GetOptions = {
