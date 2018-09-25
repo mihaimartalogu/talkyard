@@ -8,6 +8,11 @@
 
 // detect updates to previous service worker registrations, & tell users to refresh the page.
 
+//  !! https://gist.github.com/Rich-Harris/fd6c3c73e6e707e312d7c5d7d0f3b2f9
+
+// + what? many ways the browser might post the reply ??
+// view-source:https://jakearchibald.github.io/isserviceworkerready/demos/postMessage/
+// (found via:  https://jakearchibald.github.io/isserviceworkerready/#postmessage-to-&-from-worker )
 
 console.log("Service worker v0.0.1 loading [TyMSWVLDNG]");
 
