@@ -1262,10 +1262,10 @@ trait UserDao {
 
       // Perhaps there's some security problem that would results in a non-trusted user
       // getting an email about each and every new post. So, for now:  [4WKAB02]
-      SECURITY // (Later, do some security review, add more tests, and remove this restriction.)
-      if (preferences.emailForEveryNewPost && !user.isStaffOrMinTrustNotThreat(TrustLevel.TrustedMember))
-        throwForbidden("EsE7YKF24", o"""Currently only trusted non-threat members may be notified about
-          every new post""")
+      SECURITY // (Later, do some security review, add more tests, and remove this restriction.)  <——
+      //if (preferences.emailForEvery.exists(_.forEveryPost) && !user.isStaffOrMinTrustNotThreat(TrustLevel.TrustedMember))
+      //  throwForbidden("EsE7YKF24", o"""Currently only trusted non-threat members may be notified about
+      //    every new post""")
 
       if (user.fullName != preferences.fullName) {
         throwForbiddenIfBadFullName(preferences.fullName)

@@ -541,7 +541,8 @@ class ImportExportController @Inject()(cc: ControllerComponents, edContext: EdCo
         position = readOptInt(jsObj, "position") getOrElse Category.DefaultPosition,
         description = readOptString(jsObj, "description"),
         newTopicTypes = Nil, // fix later
-        unlisted = readOptBool(jsObj, "unlisted").getOrElse(false),
+        unlistCategory = readOptBool(jsObj, "unlist_category").getOrElse(false),
+        unlistTopics = readOptBool(jsObj, "unlist_topics").getOrElse(false),
         includeInSummaries = includeInSummaries,
         createdAt = readDateMs(jsObj, "createdAtMs"),
         updatedAt = readDateMs(jsObj, "updatedAtMs"),
