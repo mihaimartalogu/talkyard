@@ -8,10 +8,10 @@ drop table tag_notf_levels3;
 create table page_notf_prefs(
   site_id int not null,
   people_id int not null,
-  pages_in_category_id int,
-  pages_with_tag_label_id int,
-  pages_with_tag_value_id int,
   page_id int,
+  pages_in_category_id int,
+  posts_with_tag_label_id int,
+  -- posts_with_tag_value_id int,
   notf_level int,  -- watching_all, watching_first, tracking, normal, muted
   constraint usercattags_r_people foreign key (site_id, people_id) references users3(site_id, user_id) deferrable,
   constraint usercatagss_r_cats foreign key (site_id, category_id) references categories3(site_id, id) deferrable

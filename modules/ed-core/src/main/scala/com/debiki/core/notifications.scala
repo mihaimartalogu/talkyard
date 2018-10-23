@@ -149,13 +149,15 @@ sealed abstract class NotfLevel(val IntVal: Int) {
 object NotfLevel {
 
   /** Notified about @mentions and all new posts. */
-  case object WatchingAll extends NotfLevel(1)
+  case object WatchingAll extends NotfLevel(1)    // RENAME to EveryPost
 
   /** Notified about the first new post, plus @mentions. */
-  case object WatchingFirst extends NotfLevel(2)
+  case object WatchingFirst extends NotfLevel(2)  // RENAME to NewTopics
+
+  //case object OwnSubThreads extends NotfLevel(?)  // add later
 
   /** Notified about @mentions and new posts in threads started by the user him/herself.  */
-  case object Tracking extends NotfLevel(3)
+  case object Tracking extends NotfLevel(3)       // RENAME to HighlightNew ?
 
   /** Notified of @mentions and direct replies. */
   case object Normal extends NotfLevel(4)
@@ -173,3 +175,20 @@ object NotfLevel {
   })
 
 }
+
+
+/** If page id, category id and tag label id are all unspecified, then, means the default
+  * notf level, for the peopleId, in the whole forum (across all categories and tags).
+  *
+  * @param peopleId
+  * @param pageId
+  * @param pagesInCategoryId
+  * @param notfLevel
+  */
+case class PageNotfPrefs(
+  peopleId: UserId,
+  pageId: PageId,
+  pagesInCategoryId: Option[CategoryId],
+  //postsWithTagLabelId: Option[TagLabelId],
+  //postsWithTagValue/Id
+  notfLevel: NotfLevel)
