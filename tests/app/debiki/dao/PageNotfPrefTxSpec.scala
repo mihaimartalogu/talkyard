@@ -64,6 +64,7 @@ class PageNotfPrefTxSpec extends DaoAppSuite(disableScripts = true, disableBackg
         anyCategoryId = Some(categoryId))
     }
 
+
     "find no people watching" in {
       dao.readOnlyTransaction { tx =>
         tx.loadPeopleIdsWatchingPage(pageIdOne, minNotfLevel = NotfLevel.Muted) mustBe Set.empty
@@ -72,7 +73,8 @@ class PageNotfPrefTxSpec extends DaoAppSuite(disableScripts = true, disableBackg
       }
     }
 
-    "can do page notf prefs" - {
+
+    "can config page notf prefs" - {
       "insert notf prefs, for page" in {
         dao.readWriteTransaction { tx =>
           tx.upsertPageNotfPref(PageNotfPref(
@@ -111,12 +113,33 @@ class PageNotfPrefTxSpec extends DaoAppSuite(disableScripts = true, disableBackg
       }
     }
 
+    "can config notfs prefs for many pages" - {
+    }
 
-    "can do category notf prefs" - {
+    "can edit page notf prefs" - {
+    }
+
+
+    "can config category notf prefs" - {
 
     }
 
 
+    "can config category notf prefs, for many cats" - {
+    }
+
+    "can edit category notf prefs" - {
+    }
+
+
+    "can config notf prefs, for whole site" - {
+    }
+
+    "can edit site notf prefs" - {
+    }
+
+
+    // move to notf-dao-spec_for-watch-settings:
     //  member watches page
     //  member watches category
     //  member watches whole site
