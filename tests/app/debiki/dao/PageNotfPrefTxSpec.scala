@@ -31,7 +31,8 @@ class PageNotfPrefTxSpec extends DaoAppSuite(disableScripts = true, disableBackg
   var forumPageId: PageId = _
   var categoryId: CategoryId = _
 
-  var pageId: PageId = _
+  var pageIdOne: PageId = _
+  var pageIdTwo: PageId = _
 
   lazy val now: When = globals.now()
 
@@ -45,31 +46,82 @@ class PageNotfPrefTxSpec extends DaoAppSuite(disableScripts = true, disableBackg
       userOne = createPasswordUser("pp22xxnn", dao, trustLevel = TrustLevel.BasicMember)
       userTwo = createPasswordUser("jjyyzz55", dao, trustLevel = TrustLevel.BasicMember)
 
-      pageId = createPage(PageRole.Discussion, dao.textAndHtmlMaker.forTitle("Notfs Test Page"),
-        bodyTextAndHtml = dao.textAndHtmlMaker.forBodyOrComment("Text text."),
-        authorId = SystemUserId, browserIdData, dao,
-      // ???
-        anyCategoryId = None)
-
       val createForumResult =
           dao.createForum("Forum", s"/drafts-forum/", isForEmbCmts = false,
             Who(owner.id, browserIdData))
 
       categoryId = createForumResult.defaultCategoryId
       forumPageId = createForumResult.pagePath.pageId.get
+
+      pageIdOne = createPage(PageRole.Discussion, dao.textAndHtmlMaker.forTitle("Notfs Test One"),
+        bodyTextAndHtml = dao.textAndHtmlMaker.forBodyOrComment("Text text one."),
+        authorId = SystemUserId, browserIdData, dao,
+        anyCategoryId = Some(categoryId))
+
+      pageIdTwo = createPage(PageRole.Discussion, dao.textAndHtmlMaker.forTitle("Notfs Test Two"),
+        bodyTextAndHtml = dao.textAndHtmlMaker.forBodyOrComment("Text text two."),
+        authorId = SystemUserId, browserIdData, dao,
+        anyCategoryId = Some(categoryId))
     }
 
     "find no people watching" in {
       dao.readOnlyTransaction { tx =>
-        tx.loadPeopleIdsWatchingPage(pageId, minNotfLevel = NotfLevel.Muted) mustBe Set.empty
+        tx.loadPeopleIdsWatchingPage(pageIdOne, minNotfLevel = NotfLevel.Muted) mustBe Set.empty
         tx.loadPeopleIdsWatchingCategory(categoryId, minNotfLevel = NotfLevel.Muted) mustBe Set.empty
         tx.loadPeopleIdsWatchingWholeSite(minNotfLevel = NotfLevel.Muted) mustBe Set.empty
       }
     }
 
+    "can do page notf prefs" - {
+      "insert notf prefs, for page" in {
+        dao.readWriteTransaction { tx =>
+          tx.upsertPageNotfPref(PageNotfPref(
+            userOne.id,
+            pageId = Some(pageIdOne),
+            pagesInCategoryId = None,
+            notfLevel = NotfLevel.EveryPostAllEdits))
+        }
+      }
+
+      "find again" in {
+        dao.readOnlyTransaction { tx =>
+          tx.loadEffectiveNotfLevels(userOne.id, pageIdOne, Some(categoryId)) mustBe PageNotfLevels(
+            forPage = Some(NotfLevel.EveryPostAllEdits),
+            forCategory = None,
+            forWholeSite = None)
+        }
+      }
+
+      "... not for the wrong user" in {
+        dao.readOnlyTransaction { tx =>
+          tx.loadEffectiveNotfLevels(userTwo.id, pageIdOne, Some(categoryId)) mustBe PageNotfLevels(
+            forPage = None,
+            forCategory = None,
+            forWholeSite = None)
+        }
+      }
+
+      "... not for the wrong page" in {
+        dao.readOnlyTransaction { tx =>
+          tx.loadEffectiveNotfLevels(userOne.id, pageIdTwo, Some(categoryId)) mustBe PageNotfLevels(
+            forPage = None,
+            forCategory = None,
+            forWholeSite = None)
+        }
+      }
+    }
+
+
+    "can do category notf prefs" - {
+
+    }
+
+
     //  member watches page
     //  member watches category
     //  member watches whole site
+
+    //  event on other page —> nothing
 
     //  group watches page
     //  group watches category
@@ -91,6 +143,10 @@ class PageNotfPrefTxSpec extends DaoAppSuite(disableScripts = true, disableBackg
     //  group watches new-topics whole-site,    member watches all, category
     //  group watches new-topics whole-site,    member watches all, whole site
 
+    //  group A watches page, every post
+    //  group B watches page, muted
+    //    —> max notf level
+    //  swap A <–> B, try again, should be max notf level again
   }
 
 }

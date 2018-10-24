@@ -2,9 +2,15 @@
 alter table users3 drop column email_for_every_new_post;
 alter page user_pages3 drop column notf_level;
 alter page user_pages3 drop column notf_reason;
--- could add function is_valid_notf_level  to page_notf_prefs.notf_level?
+-- could use function  is_valid_notf_level  to page_notf_prefs.notf_level?
+-- for this constraint:  pagenotfprefs_c_notf_level c
 ------------
 
+
+-- It's empty anyway. But wait until re-impl tags.
+-- drop table tag_notf_levels3;
+-- No longer in use. Should drop. But then the migrations failed :-/  on my laptop-2015 only, why.
+-- drop table dw1_settings;
 
 alter table page_users3 rename to user_pages3;
 
@@ -39,11 +45,22 @@ create table perms_on_groups3 (
 create table group_members3 (
   group_id int,
   member_id int,
+  -- later:
+  show_membership boolean,  -- if the group title should be shown next to the username
+                            --  e.g.   "@pelle  Pelle Svanslös  staff" — if is a staff group memebr.
+  membership_prio int,   -- group settings (e.g. page notf prefs) for higher prio groups,
+                         -- override settings in lower prio groups.
   -- skip:
  -- is_group_true boolean, references people3(id, is_group)  + index  deferrable
  --  instead: is_group does a select from people3.
 --  https://stackoverflow.com/a/10136019/694469 — if works, upvote
 )
+
+-- later:
+alter table users3 add column default_group_prio int default 10;
+alter table users3 add column show_group_membership boolean;  ?
+
+
 
 create table group_notf_prefs3 (
   site_id int,

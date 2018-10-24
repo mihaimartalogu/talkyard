@@ -150,6 +150,12 @@ object NotfLevel {
 
 
   /** Like EveryPost, but also notified about any edits of any post.
+    *
+    * If this is desirable only for, say, the Orig Post (e.g. to get notified if someone
+    * edits one's blog post = the orig post), then don't add more
+    * notification levels here. Instead, make it possible to subscribe for notifications
+    * on individual posts, and sub-threads, rather than on whole pages / categories / tags only.
+    * This could be a power user feature in the More... post action dropdown.
     */
   case object EveryPostAllEdits extends NotfLevel(9)
 

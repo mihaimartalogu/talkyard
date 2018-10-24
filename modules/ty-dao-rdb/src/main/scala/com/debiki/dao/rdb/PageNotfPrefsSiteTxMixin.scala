@@ -59,19 +59,25 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
         notf_level = excluded.notf_level
       """
 
-    runUpdateSingleRow(insertStatement, List(
+    val values = List(
       siteId.asAnyRef,
       notfPref.peopleId.asAnyRef,
       notfPref.notfLevel.toInt.asAnyRef,
       notfPref.pageId.orNullVarchar,
-      notfPref.pagesInCategoryId.orNullInt))
+      notfPref.pagesInCategoryId.orNullInt)
+
+    runUpdateSingleRow(insertStatement, values)
   }
 
 
   override def deletePageNotfPref(notfPref: PageNotfPref): Boolean = {
+    untested("TyE7BAKRSW02", "Deleting notf prefs")
     val (conflictColumnName, conflictColumnValue) = conflictColumnNameValue(notfPref)
     val deleteStatement = s"""
-      delete from page_notf_prefs3 where site_id = ? and people_id = ? and $conflictColumnName = ?
+      delete from page_notf_prefs3
+      where site_id = ?
+        and people_id = ?
+        and $conflictColumnName = ?
       """
     runUpdateSingleRow(deleteStatement, List(
         siteId.asAnyRef, notfPref.peopleId.asAnyRef, conflictColumnValue))
@@ -80,8 +86,11 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
 
   def loadEffectiveNotfLevels(peopleId: UserId, pageId: PageId, categoryId: Option[CategoryId])
         : PageNotfLevels = {
-    def selectNotfLevelWhere(what: Int) =
-      s"select notf_level, $what as what from page_notf_prefs3 where site_id = ? and people_id = ?"
+    def selectNotfLevelWhere(what: Int) = s"""
+      select notf_level, $what as what
+      from page_notf_prefs3
+      where site_id = ?
+        and people_id = ?"""
 
     val query = s"""
       ${selectNotfLevelWhere(111)} and page_id = ?
@@ -145,6 +154,7 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
     loadPeopleIdsImpl("pages_in_whole_site", true.asAnyRef, minNotfLevel)
   }
 
+
   def loadPeopleIdsImpl(conflictColumnName: String, conflictColumnValue: AnyRef, minNotfLevel: NotfLevel)
         : Set[UserId] = {
     val query = s"""
@@ -153,7 +163,13 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
         and $conflictColumnName = ?
         and notf_level >= ?
       """
-    runQueryFindMany(query, List(siteId.asAnyRef, conflictColumnValue, minNotfLevel), rs => {
+
+    val values = List(
+      siteId.asAnyRef,
+      conflictColumnValue,
+      minNotfLevel.toInt.asAnyRef)
+
+    runQueryFindMany(query, values, rs => {
       rs.getInt("people_id")
     }).toSet
   }
