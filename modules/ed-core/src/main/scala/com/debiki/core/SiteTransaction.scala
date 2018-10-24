@@ -537,13 +537,24 @@ trait SiteTransaction {
   /** Loads users watching the specified page, any parent categories or forums,
     * and people watching everything on the whole site.
     */
-  def loadUserIdsWatchingPage(pageId: PageId): Seq[UserId]
+  def loadUserIdsWatchingPage(pageId: PageId): Seq[UserId]   // xx rm
 
-  def loadUserPageSettings(userId: UserId, pageId: PageId): Option[UserPageSettings]
-  def loadUserPageSettingsOrDefault(userId: UserId, pageId: PageId): UserPageSettings =
-    loadUserPageSettings(userId, pageId) getOrElse UserPageSettings.Default
+  def loadUserPageSettings(userId: UserId, pageId: PageId): Option[UserPageSettings]   // xx rm
 
-  def saveUserPageSettings(userId: UserId, pageId: PageId, settings: UserPageSettings)
+  def saveUserPageSettings(userId: UserId, pageId: PageId, settings: UserPageSettings)   // xx rm
+
+  def upsertPageNotfPref(notfPref: PageNotfPref)
+  def deletePageNotfPref(notfPref: PageNotfPref): Boolean
+  def loadEffectiveNotfLevels(peopleId: UserId, pageId: PageId, categoryId: Option[CategoryId]): PageNotfLevels
+  def loadPeopleIdsWatchingPage(pageId: PageId, minNotfLevel: NotfLevel): Set[UserId]
+  def loadPeopleIdsWatchingCategory(categoryId: CategoryId, minNotfLevel: NotfLevel): Set[UserId]
+  def loadPeopleIdsWatchingWholeSite(minNotfLevel: NotfLevel): Set[UserId]
+  /*
+  def loadPeopleIdsWatchingEveryPostOnPage(pageId: PageId): Set[UserId]
+  def loadPeopleIdsWatchingEveryPostInCategory(categoryId: CategoryId): Set[UserId]
+  def loadPeopleIdsWatchingEveryPostWholeSite(): Set[UserId]
+  def loadPeopleIdsWatchingNewTopicsInCategory(categoryId: CategoryId): Set[UserId]
+  def loadPeopleIdsWatchingNewTopicsWholeSite(): Set[UserId] */
 
   def listUsernames(pageId: PageId, prefix: String): Seq[NameAndUsername]
 

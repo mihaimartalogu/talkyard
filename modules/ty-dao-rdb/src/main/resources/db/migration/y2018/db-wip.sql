@@ -1,8 +1,16 @@
+-- v376:  Next time, if all fine:
+alter table users3 drop column email_for_every_new_post;
+alter page user_pages3 drop column notf_level;
+alter page user_pages3 drop column notf_reason;
+-- could add function is_valid_notf_level  to page_notf_prefs.notf_level?
+------------
+
+
 alter table page_users3 rename to user_pages3;
 
 
 alter table users3 add column separate_email_for_every smallint;
-update users3 set separate_email_for_every = 3 where email_for_every_new_post;
+update users3 set separate_email_for_every = 3 where email_for_every_new_post;  -- NO
 alter table users3 drop column email_for_every_new_post;
 
 alter table users3 add column watch_level_after_posted smallint;
@@ -13,6 +21,11 @@ alter table users3 add column group_auto_join_if_email_domain int;
 alter table users3 add column group_default_prio int;
   -- auto_add_already_existing_members (only in create dialog)
 
+-- page_notf_prefs could +=
+--   post_id int,
+--   incl_sub_categories boolean,
+--   incl_sub_tags boolean,
+--   incl_sub_threads boolean,
 
 create table perms_on_groups3 (
   people_id int,

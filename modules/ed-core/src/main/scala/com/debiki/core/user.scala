@@ -509,7 +509,10 @@ case object User {
 
 
 // Try to remove all fields unique for only Member and only Guest.
-sealed trait User {
+sealed trait User {   // REFACTOR, RENAME to People? can be either a Guest, OneMember or a Group.
+                      // And rename MemberOrGroup to OneMemberOrGroup.
+                      // Guest and OneMember are both OneUser.
+                      // People could maybe be named  OneUserOrGroup instead? but People sounds better?
   def id: UserId
   def email: String  // COULD rename to emailAddr
   def emailNotfPrefs: EmailNotfPrefs
@@ -723,6 +726,8 @@ case class Guest(
 
 
 sealed trait MemberOrGroupInclDetails {
+  def summaryEmailIntervalMins: Option[Int]
+  def summaryEmailIfActive: Option[Boolean]
   def seeActivityMinTrustLevel: Option[TrustLevel]
 }
 
@@ -1182,11 +1187,12 @@ object SummaryEmails {
 }
 
 
+@deprecated("now", "use PageNotfPref instead")
 case class UserPageSettings(
   notfLevel: NotfLevel)
 
 object UserPageSettings {
-  val Default = UserPageSettings(NotfLevel.Normal)
+  val Default = UserPageSettings(NotfLevel.Normal)  // rm
 }
 
 

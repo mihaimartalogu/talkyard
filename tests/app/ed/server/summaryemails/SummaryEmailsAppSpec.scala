@@ -159,6 +159,7 @@ class SummaryEmailsAppSpec extends DaoAppSuite(
         newTopicTypes = List(PageRole.Discussion),
         shallBeDefaultCategory = false,
         unlistCategory = false,
+        unlistTopics = false,
         includeInSummaries = IncludeInSummaries.NoExclude),
       immutable.Seq(ForumDao.makeEveryonesDefaultCategoryPerms(noSummariesCategoryId)),
       Who.System)

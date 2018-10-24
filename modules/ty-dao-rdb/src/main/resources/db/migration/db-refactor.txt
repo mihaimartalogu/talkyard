@@ -1,6 +1,8 @@
 
 
 rename perms_on_pages to  page_perms  ?
+   no ... instead,  perms_on_pages, perms_on_cats, perms_on_tags. ?
+
 
 split  page_users into:
   - page_members    — maybe  is_assigned?
