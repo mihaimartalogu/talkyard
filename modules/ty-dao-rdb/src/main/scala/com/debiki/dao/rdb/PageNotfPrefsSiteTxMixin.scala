@@ -17,15 +17,15 @@
 
 package com.debiki.dao.rdb
 
-import collection.immutable
 import com.debiki.core._
 import com.debiki.core.Prelude._
 import java.{sql => js}
 import Rdb._
-import scala.collection.mutable.ArrayBuffer
 
 
-/** Loads and saves Draft:s.
+/** Loads and saves PageNotfPref:s.
+  *
+  * Tested here:  TyT8MKRD25
   */
 trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
   self: RdbSiteTransaction =>
@@ -36,6 +36,8 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
       "page_id" -> notfPref.pageId.get.asAnyRef
     else if (notfPref.pagesInCategoryId.isDefined)
       "pages_in_category_id" -> notfPref.pagesInCategoryId.get.asAnyRef
+    else if (notfPref.wholeSite)
+      "pages_in_whole_site" -> true.asAnyRef
     else
       die("TyE2ABK057")
 
@@ -49,11 +51,11 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
         people_id,
         notf_level,
         page_id,
-        pages_in_category_id
+        pages_in_whole_site,
+        pages_in_category_id)
         -- pages_with_tag_label_id,
-        )
-      values (?, ?, ?, ?, ?)
-      -- There can be only one on-conflict.
+      values (?, ?, ?, ?, ?, ?)
+      -- There can be only one on-conflict clause.
       on conflict (site_id, people_id, $conflictColumnName)
       do update set
         notf_level = excluded.notf_level
@@ -64,6 +66,8 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
       notfPref.peopleId.asAnyRef,
       notfPref.notfLevel.toInt.asAnyRef,
       notfPref.pageId.orNullVarchar,
+      // pages_in_whole_site needs to be null, if isn't true, because of a unique constraint.
+      if (notfPref.wholeSite) true.asAnyRef else NullBoolean,
       notfPref.pagesInCategoryId.orNullInt)
 
     runUpdateSingleRow(insertStatement, values)
@@ -108,7 +112,8 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
     var result = PageNotfLevels(None, None, None)
 
     runQueryFindMany(query, values, rs => {
-      val notfLevel = NotfLevel.fromInt(getInt(rs, "notf_level")).getOrElse(NotfLevel.Normal)
+      val notfLevelInt = getInt(rs, "notf_level")
+      val notfLevel = NotfLevel.fromInt(notfLevelInt).getOrElse(NotfLevel.Normal)
       val what = getInt(rs, "what")
       what match {
         case 111 => result = result.copy(forPage = Some(notfLevel))
@@ -121,26 +126,6 @@ trait PageNotfPrefsSiteTxMixin extends SiteTransaction {
     result
   }
 
-
-  /*def loadPeopleIdsWatchingEveryPostOnPage(pageId: PageId): Set[UserId] = {
-    loadPeopleIdsImpl("page_id", pageId, NotfLevel.WatchingAll)
-  }
-
-  def loadPeopleIdsWatchingEveryPostInCategory(categoryId: CategoryId): Set[UserId] = {
-    loadPeopleIdsImpl("pages_in_category_id", categoryId.asAnyRef, NotfLevel.WatchingAll)
-  }
-
-  def loadPeopleIdsWatchingEveryPostWholeSite(): Set[UserId] = {
-    loadPeopleIdsImpl("pages_in_whole_site", true.asAnyRef, NotfLevel.WatchingAll)
-  }
-
-  def loadPeopleIdsWatchingNewTopicsInCategory(categoryId: CategoryId): Set[UserId] = {
-    loadPeopleIdsImpl("pages_in_category_id", categoryId.asAnyRef, NotfLevel.WatchingFirst)
-  }
-
-  def loadPeopleIdsWatchingNewTopicsWholeSite(): Set[UserId] = {
-    loadPeopleIdsImpl("pages_in_whole_site", true.asAnyRef, NotfLevel.WatchingFirst)
-  }*/
 
   def loadPeopleIdsWatchingPage(pageId: PageId, minNotfLevel: NotfLevel): Set[UserId] = {
     loadPeopleIdsImpl("page_id", pageId, minNotfLevel)

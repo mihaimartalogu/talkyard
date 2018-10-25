@@ -20,6 +20,13 @@ create table page_notf_prefs3(
   constraint pagenotfprefs_r_pages foreign key (site_id, page_id) references pages3(site_id, page_id) deferrable,
   -- ix pagenotfprefs_people_category_u
   constraint pagenotfprefs_r_cats foreign key (site_id, pages_in_category_id) references categories3(site_id, id) deferrable,
+
+
+  constraint pagenotfprefs_people_pageid_u    unique (site_id, people_id, page_id),
+  constraint pagenotfprefs_people_wholesite_u unique (site_id, people_id, pages_in_whole_site),
+  constraint pagenotfprefs_people_category_u  unique (site_id, people_id, pages_in_category_id),
+  constraint pagenotfprefs_people_taglabel_u  unique (site_id, people_id, pages_with_tag_label_id),
+
   -- Either true or absent.
   constraint pagenotfprefs_c_wholesite_true check (pages_in_whole_site),
   constraint pagenotfprefs_c_notf_level check (notf_level between 1 and 9)
@@ -28,22 +35,6 @@ create table page_notf_prefs3(
 
 create index pagenotfprefs_people_i on page_notf_prefs3 (
   site_id, people_id);
-
-create unique index pagenotfprefs_people_wholesite_u on page_notf_prefs3 (
-  site_id, people_id)
-  ; -- where pages_in_whole_site;
-
-create unique index pagenotfprefs_people_pageid_u on page_notf_prefs3 (
-  site_id, people_id, page_id)
-  ; -- where page_id is not null;
-
-create unique index pagenotfprefs_people_category_u on page_notf_prefs3 (
-  site_id, people_id, pages_in_category_id)
-  ; -- where pages_in_category_id is not null;
-
-create unique index pagenotfprefs_people_taglabel_u on page_notf_prefs3 (
-  site_id, people_id, pages_with_tag_label_id)
-  ; -- where pages_with_tag_label_id is not null;
 
 
 insert into page_notf_prefs3(site_id, people_id, notf_level)

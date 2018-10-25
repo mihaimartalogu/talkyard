@@ -549,12 +549,6 @@ trait SiteTransaction {
   def loadPeopleIdsWatchingPage(pageId: PageId, minNotfLevel: NotfLevel): Set[UserId]
   def loadPeopleIdsWatchingCategory(categoryId: CategoryId, minNotfLevel: NotfLevel): Set[UserId]
   def loadPeopleIdsWatchingWholeSite(minNotfLevel: NotfLevel): Set[UserId]
-  /*
-  def loadPeopleIdsWatchingEveryPostOnPage(pageId: PageId): Set[UserId]
-  def loadPeopleIdsWatchingEveryPostInCategory(categoryId: CategoryId): Set[UserId]
-  def loadPeopleIdsWatchingEveryPostWholeSite(): Set[UserId]
-  def loadPeopleIdsWatchingNewTopicsInCategory(categoryId: CategoryId): Set[UserId]
-  def loadPeopleIdsWatchingNewTopicsWholeSite(): Set[UserId] */
 
   def listUsernames(pageId: PageId, prefix: String): Seq[NameAndUsername]
 

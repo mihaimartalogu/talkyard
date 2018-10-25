@@ -196,10 +196,14 @@ object NotfLevel {
   case object Muted extends NotfLevel(1)
 
   def fromInt(value: Int): Option[NotfLevel] = Some(value match {
+    case EveryPostAllEdits.IntVal => EveryPostAllEdits
     case WatchingAll.IntVal => WatchingAll
+    case TopicProgress.IntVal => TopicProgress
+    case TopicSolved.IntVal => TopicSolved
     case WatchingFirst.IntVal => WatchingFirst
     case Tracking.IntVal => Tracking
     case Normal.IntVal => Normal
+    case Hushed.IntVal => Hushed
     case Muted.IntVal => Muted
     case _ => return None
   })
@@ -217,20 +221,26 @@ object NotfLevel {
   */
 case class PageNotfPref(
   peopleId: UserId,
-  pageId: Option[PageId],
-  pagesInCategoryId: Option[CategoryId],
-  //pagesWithTagLabelId: Option[TagLabelId], — later
-  notfLevel: NotfLevel)
+  pageId: Option[PageId] = None,
+  pagesInCategoryId: Option[CategoryId] = None,
+  //pagesWithTagLabelId: Option[TagLabelId] = None, — later
+  wholeSite: Boolean = false,
+  notfLevel: NotfLevel) {
+
+  require(pageId.isDefined.toZeroOne + pagesInCategoryId.isDefined.toZeroOne +
+    wholeSite.toZeroOne == 1, "TyE2BKP053")
+}
 
 
 case class PageNotfLevels(
-  forPage: Option[NotfLevel],
-  forCategory: Option[NotfLevel],
-  forWholeSite: Option[NotfLevel]) {
+  forPage: Option[NotfLevel] = None,
+  forCategory: Option[NotfLevel] = None,
+  forWholeSite: Option[NotfLevel] = None) {
 
   /** The most specific notf level (per page), overrides the less specific (category, whole site).
     */
   def effectiveNotfLevel: NotfLevel =
+    // Tested here: [TyT7KSJQ296]
     forPage.orElse(forCategory.orElse(forWholeSite)).getOrElse(NotfLevel.Normal)
 
 }
